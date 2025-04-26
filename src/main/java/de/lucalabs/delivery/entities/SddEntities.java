@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 
 public final class SddEntities {
 
-    public static final EntityType<PlacedShippingLabel> SHIPPING_LABEL = register("fastener", () ->
+    public static final EntityType<PlacedShippingLabel> SHIPPING_LABEL = register("placed_shipping_label", () ->
             EntityType.Builder.<PlacedShippingLabel>create(PlacedShippingLabel::new, SpawnGroup.MISC)
                     .setDimensions(1.15F, 2.8F)
                     .maxTrackingRange(10)

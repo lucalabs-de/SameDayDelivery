@@ -7,7 +7,7 @@ import net.minecraft.util.Identifier;
 
 public final class Tags {
 
-    public static final TagKey<Block> BARRELS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("c", "barrels"));
+    public static final TagKey<Block> BARRELS = TagKey.of(RegistryKeys.BLOCK, Identifier.of("c", "wooden_barrels"));
 
     private Tags() {}
 }

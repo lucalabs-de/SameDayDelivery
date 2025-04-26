@@ -1,0 +1,8 @@
+{
+  "sources": [
+    {
+      "type": "minecraft:single",
+      "resource": "samedaydelivery:entity/shipping_label_placed"
+    }
+  ]
+}

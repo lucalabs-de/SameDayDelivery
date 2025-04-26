@@ -12,7 +12,7 @@
 		"sources": "https://github.com/lucalabs-de/SameDayDelivery"
 	},
 	"license": "MIT",
-	"icon": "assets/same-day-delivery/icon.png",
+	"icon": "assets/samedaydelivery/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
@@ -24,6 +24,7 @@
 	},
 	"mixins": [
 	],
+	"accessWidener": "samedaydelivery.accesswidener",
 	"depends": {
 		"fabricloader": ">=0.16.14",
 		"minecraft": "~1.20.1",

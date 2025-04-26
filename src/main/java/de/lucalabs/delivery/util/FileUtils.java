@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -57,19 +58,11 @@ public final class FileUtils {
 
         File appDir = new File(path, SameDayDelivery.MOD_ID);
         if (!appDir.exists()) {
-            if (!appDir.mkdirs()) {
-                throw new IOException("Failed to create application directory: " + appDir.getAbsolutePath());
-            }
+            Files.createDirectories(appDir.toPath());
         }
 
         // Create the file inside the application directory
-        File dataFile = new File(appDir, dataFileName);
-        if (!dataFile.exists()) {
-            if (!dataFile.createNewFile()) {
-                throw new IOException("Failed to create data file: " + dataFile.getAbsolutePath());
-            }
-        }
-        return dataFile;
+        return new File(appDir, dataFileName);
     }
 
     private interface FilePath {
