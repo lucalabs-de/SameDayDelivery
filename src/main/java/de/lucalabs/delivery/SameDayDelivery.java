@@ -1,5 +1,7 @@
 package de.lucalabs.delivery;
 
+import de.lucalabs.delivery.entities.SddEntities;
+import de.lucalabs.delivery.items.SddItems;
 import net.fabricmc.api.ModInitializer;
 
 import org.slf4j.Logger;
@@ -12,6 +14,9 @@ public class SameDayDelivery implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		SddItems.initialize();
+		SddEntities.initialize();
+
 		LOGGER.info("Loaded Same-Day Delivery!");
 	}
 }

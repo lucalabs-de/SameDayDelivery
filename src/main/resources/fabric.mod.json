@@ -9,9 +9,9 @@
 	],
 	"contact": {
 		"homepage": "https://modrinth.com/project/same-day-delivery",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"sources": "https://github.com/lucalabs-de/SameDayDelivery"
 	},
-	"license": "CC0-1.0",
+	"license": "MIT",
 	"icon": "assets/same-day-delivery/icon.png",
 	"environment": "*",
 	"entrypoints": {
@@ -23,11 +23,6 @@
 		]
 	},
 	"mixins": [
-		"same-day-delivery.mixins.json",
-		{
-			"config": "same-day-delivery.client.mixins.json",
-			"environment": "client"
-		}
 	],
 	"depends": {
 		"fabricloader": ">=0.16.14",

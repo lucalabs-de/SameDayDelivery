@@ -1,0 +1,11 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "samedaydelivery:entity/shipping_label_placed"
+  },
+  "display": {
+    "fixed": {
+      "translation": [ -7.5, -16, -8 ]
+    }
+  }
+}

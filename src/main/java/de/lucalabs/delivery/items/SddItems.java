@@ -2,16 +2,22 @@ package de.lucalabs.delivery.items;
 
 import de.lucalabs.delivery.SameDayDelivery;
 import net.minecraft.item.Item;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 
 public final class SddItems {
+
+    public static final Item SHIPPING_LABEL = register(ShippingLabel.ID, ShippingLabel.getInstance());
+
     private SddItems() {}
+
+    private static Item register(Identifier id, Item item) {
+        return Registry.register(Registries.ITEM, id, item);
+    }
 
     public static void initialize() {
         SameDayDelivery.LOGGER.info("initializing items");
-
-        Identifier shippingLabelId = Identifier.of(SameDayDelivery.MOD_ID, ShippingLabel.ID);
-        ShippingLabel item = ShippingLabel.getInstance();
     }
 
 }
