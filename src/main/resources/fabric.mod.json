@@ -1,0 +1,41 @@
+{
+	"schemaVersion": 1,
+	"id": "samedaydelivery",
+	"version": "${version}",
+	"name": "Same-Day Delivery",
+	"description": "Ship your items between worlds!",
+	"authors": [
+		"lucalabs-de"
+	],
+	"contact": {
+		"homepage": "https://modrinth.com/project/same-day-delivery",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/same-day-delivery/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"de.lucalabs.delivery.SameDayDelivery"
+		],
+		"client": [
+			"de.lucalabs.delivery.SameDayDeliveryClient"
+		]
+	},
+	"mixins": [
+		"same-day-delivery.mixins.json",
+		{
+			"config": "same-day-delivery.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.16.14",
+		"minecraft": "~1.20.1",
+		"java": ">=17",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
