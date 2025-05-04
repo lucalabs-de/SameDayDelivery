@@ -16,7 +16,7 @@ public final class ServerEventHandler {
         PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, blockEntity) -> {
             if (state.isIn(Tags.BARRELS)) {
                 for (Entity entity : world.getEntitiesByClass(PlacedShippingLabel.class, new Box(pos).expand(1.0), e -> true)) {
-//                    entity.discard(); TODO add back
+                    entity.discard();
                 }
             }
         });

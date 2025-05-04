@@ -43,11 +43,11 @@ public class ShippingLabel extends Item {
         final BlockPos clickPos = context.getBlockPos();
 
         if (world.getBlockState(clickPos).isIn(Tags.BARRELS)) {
-//            if (!TransferUtils.isTransferInProgress(world, clickPos)) { TODO add back
+            if (!TransferUtils.isTransferInProgress(world, clickPos)) {
                 player.getMainHandStack().decrement(1);
                 PlacedShippingLabel.create(world, clickPos, side);
                 return ActionResult.SUCCESS;
-//            }
+            }
         }
 
         return ActionResult.PASS;

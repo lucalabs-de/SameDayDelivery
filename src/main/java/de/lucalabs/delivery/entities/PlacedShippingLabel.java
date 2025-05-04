@@ -7,25 +7,27 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BarrelBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityDimensions;
+import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.decoration.AbstractDecorationEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtHelper;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.Validate;
 import org.jetbrains.annotations.Nullable;
 
 public class PlacedShippingLabel extends AbstractDecorationEntity {
+
+    BlockPos attachedBarrel;
 
     protected PlacedShippingLabel(EntityType<? extends AbstractDecorationEntity> type, World world) {
         super(type, world);
@@ -41,12 +43,45 @@ public class PlacedShippingLabel extends AbstractDecorationEntity {
     }
 
     public static PlacedShippingLabel create(final World world, final BlockPos barrel, final Direction facing) {
-        final PlacedShippingLabel label = new PlacedShippingLabel(world, barrel);
+        final PlacedShippingLabel label = new PlacedShippingLabel(world, barrel.offset(facing, 1));
         label.setFacing(facing);
+        label.setBarrel(barrel);
         world.spawnEntity(label);
         label.onPlace();
-        label.setPos(barrel.getX(), barrel.getY(), barrel.getZ());
         return label;
+    }
+
+    protected void updateAttachmentPosition() {
+        if (this.facing != null) {
+            double d = 0.46875;
+            double e = (double)this.attachmentPos.getX() + 0.5 - (double)this.facing.getOffsetX() * 0.46875;
+            double f = (double)this.attachmentPos.getY() + 0.5 - (double)this.facing.getOffsetY() * 0.46875;
+            double g = (double)this.attachmentPos.getZ() + 0.5 - (double)this.facing.getOffsetZ() * 0.46875;
+            this.setPos(e, f, g);
+            double h = this.getWidthPixels();
+            double i = this.getHeightPixels();
+            double j = this.getWidthPixels();
+            Direction.Axis axis = this.facing.getAxis();
+            switch (axis) {
+                case X -> h = 1.0;
+                case Y -> i = 1.0;
+                case Z -> j = 1.0;
+            }
+
+            h /= 32.0;
+            i /= 32.0;
+            j /= 32.0;
+            this.setBoundingBox(new Box(e - h, f - i, g - j, e + h, f + i, g + j));
+        }
+    }
+
+    @Override
+    protected float getEyeHeight(EntityPose pose, EntityDimensions dimensions) {
+        return 0.0F;
+    }
+
+    public void setBarrel(BlockPos pos) {
+        this.attachedBarrel = pos;
     }
 
     @Override
@@ -77,7 +112,7 @@ public class PlacedShippingLabel extends AbstractDecorationEntity {
 
     @Override
     public boolean canStayAttached() {
-        return !this.getWorld().canSetBlock(this.attachmentPos) || isOnBarrel(this.getWorld().getBlockState(this.attachmentPos));
+        return !this.getWorld().canSetBlock(this.attachmentPos) || isOnBarrel(this.getWorld().getBlockState(attachedBarrel));
     }
 
     @Override
@@ -94,6 +129,7 @@ public class PlacedShippingLabel extends AbstractDecorationEntity {
 
         this.prevPitch = this.getPitch();
         this.prevYaw = this.getYaw();
+        this.updateAttachmentPosition();
     }
 
     @Override
@@ -144,12 +180,13 @@ public class PlacedShippingLabel extends AbstractDecorationEntity {
     public void writeCustomDataToNbt(NbtCompound nbt) {
         super.writeCustomDataToNbt(nbt);
         nbt.putByte("Facing", (byte)this.facing.getId());
+        nbt.put("Barrel", NbtHelper.fromBlockPos(attachedBarrel));
     }
 
     public void readCustomDataFromNbt(NbtCompound nbt) {
         super.readCustomDataFromNbt(nbt);
         this.setFacing(Direction.byId(nbt.getByte("Facing")));
-        this.setInvisible(nbt.getBoolean("Invisible"));
+        this.setBarrel(NbtHelper.toBlockPos(nbt.getCompound("Barrel")));
     }
 
     @Override

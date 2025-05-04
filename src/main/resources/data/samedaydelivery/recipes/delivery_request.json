@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "minecraft:feather"
+    },
+    {
+      "item": "minecraft:ink_sac"
+    },
+    {
+      "item": "samedaydelivery:shipping_label"
+    }
+  ],
+  "result": {
+    "item": "samedaydelivery:delivery_request"
+  }
+}
