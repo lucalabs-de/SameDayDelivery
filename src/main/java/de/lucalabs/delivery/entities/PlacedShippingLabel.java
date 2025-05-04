@@ -18,16 +18,21 @@ import net.minecraft.nbt.NbtHelper;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
+import net.minecraft.particle.ParticleTypes;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.Validate;
 import org.jetbrains.annotations.Nullable;
 
 public class PlacedShippingLabel extends AbstractDecorationEntity {
 
-    BlockPos attachedBarrel;
+    private BlockPos attachedBarrel;
 
     protected PlacedShippingLabel(EntityType<? extends AbstractDecorationEntity> type, World world) {
         super(type, world);
@@ -54,9 +59,9 @@ public class PlacedShippingLabel extends AbstractDecorationEntity {
     protected void updateAttachmentPosition() {
         if (this.facing != null) {
             double d = 0.46875;
-            double e = (double)this.attachmentPos.getX() + 0.5 - (double)this.facing.getOffsetX() * 0.46875;
-            double f = (double)this.attachmentPos.getY() + 0.5 - (double)this.facing.getOffsetY() * 0.46875;
-            double g = (double)this.attachmentPos.getZ() + 0.5 - (double)this.facing.getOffsetZ() * 0.46875;
+            double e = (double) this.attachmentPos.getX() + 0.5 - (double) this.facing.getOffsetX() * 0.46875;
+            double f = (double) this.attachmentPos.getY() + 0.5 - (double) this.facing.getOffsetY() * 0.46875;
+            double g = (double) this.attachmentPos.getZ() + 0.5 - (double) this.facing.getOffsetZ() * 0.46875;
             this.setPos(e, f, g);
             double h = this.getWidthPixels();
             double i = this.getHeightPixels();
@@ -134,13 +139,25 @@ public class PlacedShippingLabel extends AbstractDecorationEntity {
 
     @Override
     public Box getBoundingBox() {
-        return new Box(getBlockPos()).expand(-.05).stretch(Vec3d.of(getHorizontalFacing().getVector()).multiply(-.4));
+        Vec3i dir = getHorizontalFacing().getVector();
+        double delta = .8d;
+        double offset = -.1d;
+        return new Box(getBlockPos())
+                .expand(-.05)
+                .shrink(dir.getX() * delta, dir.getY() * delta, dir.getZ() * delta)
+                .offset(dir.getX() * offset, dir.getY() * offset, dir.getZ() * offset);
     }
 
     @Override
     public boolean damage(DamageSource source, float amount) {
-        BlockPos barrelPos = getBlockPos();
-        BlockEntity blockEntity = getWorld().getBlockEntity(barrelPos);
+
+        if (getWorld().isClient()) {
+            return false;
+        }
+
+        ServerWorld world = (ServerWorld) getWorld();
+        BlockEntity blockEntity = world.getBlockEntity(attachedBarrel);
+
         if (blockEntity instanceof BarrelBlockEntity barrel) {
             int size = barrel.size(); // Total number of slots (should be 27)
             ItemStack[] barrelStacks = new ItemStack[size];
@@ -156,8 +173,10 @@ public class PlacedShippingLabel extends AbstractDecorationEntity {
 
             if (success) {
                 // TODO spawn enchanting particles and despawn barrel with items
+                world.spawnParticles(ParticleTypes.SMOKE, attachedBarrel.toCenterPos().getX(), attachedBarrel.toCenterPos().getY(), attachedBarrel.toCenterPos().getZ(), 20, 0.0, 0.0, 0.0, 0);
             } else {
                 // TODO spawn smoke particles
+                world.spawnParticles(ParticleTypes.SMOKE, attachedBarrel.toCenterPos().getX(), attachedBarrel.toCenterPos().getY(), attachedBarrel.toCenterPos().getZ(), 20, 0.0, 0.0, 0.0, 0);
             }
         }
         return false;
@@ -179,7 +198,7 @@ public class PlacedShippingLabel extends AbstractDecorationEntity {
 
     public void writeCustomDataToNbt(NbtCompound nbt) {
         super.writeCustomDataToNbt(nbt);
-        nbt.putByte("Facing", (byte)this.facing.getId());
+        nbt.putByte("Facing", (byte) this.facing.getId());
         nbt.put("Barrel", NbtHelper.fromBlockPos(attachedBarrel));
     }
 

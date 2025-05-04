@@ -9,6 +9,7 @@ import net.minecraft.util.Identifier;
 public final class SddItems {
 
     public static final Item SHIPPING_LABEL = register(ShippingLabel.ID, ShippingLabel.getInstance());
+    public static final Item DELIVERY_REQUEST_FORM = register(DeliveryRequestForm.ID, DeliveryRequestForm.getInstance());
 
     private SddItems() {}
 

@@ -1,3 +1,4 @@
 {
-  "item.samedaydelivery.shipping_label": "Versandschein"
+  "item.samedaydelivery.shipping_label": "Versandschein",
+  "item.samedaydelivery.delivery_request": "Lieferanfrage"
 }

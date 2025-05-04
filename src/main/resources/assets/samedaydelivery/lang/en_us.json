@@ -1,3 +1,7 @@
 {
-  "item.samedaydelivery.shipping_label": "Shipping Label"
+  "item.samedaydelivery.shipping_label": "Shipping Label",
+  "item.samedaydelivery.delivery_request": "Delivery Request Form",
+
+  "lore.samedaydelivery.shipping_label": "A label to mark goods for distant shores.",
+  "lore.samedaydelivery.delivery_request": "Delivery guaranteed — weather permitting."
 }
