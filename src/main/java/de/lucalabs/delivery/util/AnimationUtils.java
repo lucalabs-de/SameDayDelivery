@@ -17,20 +17,36 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public final class AnimationUtils {
-    public static final long DEFAULT_ANIMATION_DURATION = 3;
+    public static final long DEFAULT_ANIMATION_DURATION = 2;
 
     private AnimationUtils() {
     }
 
-    public static void playDeliverySound(ServerWorld w, BlockPos p) {
-        w.playSoundAtBlockCenter(
+    public static void playDeliveryAnimation(ServerWorld w, BlockPos p) {
+        Vec3d pos = p.toCenterPos();
+
+        Effect e = AnimatedBallEffect.builder(w, ParticleTypes.ENCHANT, pos)
+                .originOffset(new Vec3d(0, 0, 0))
+                .particles(250)
+                .particlesPerIteration(50)
+                .build();
+        e.runFor(DEFAULT_ANIMATION_DURATION + .5);
+
+        w.playSound(
+                null,
+                p,
+                SoundEvents.ITEM_CHORUS_FRUIT_TELEPORT,
+                SoundCategory.BLOCKS,
+                .8F,
+                .5F);
+
+        runWithDelay(() -> w.getServer().execute(() -> w.playSound(
+                null,
                 p,
                 SoundEvents.BLOCK_WOOD_PLACE,
                 SoundCategory.BLOCKS,
                 1,
-                .5F,
-                false
-        );
+                .5F)), DEFAULT_ANIMATION_DURATION, TimeUnit.SECONDS);
     }
 
     public static void playTransferAnimation(ServerWorld w, BlockPos p) {
@@ -41,19 +57,15 @@ public final class AnimationUtils {
                 .particles(250)
                 .particlesPerIteration(50)
                 .build();
-        e.runFor(DEFAULT_ANIMATION_DURATION);
+        e.runFor(DEFAULT_ANIMATION_DURATION + .5);
 
-        runWithDelay(() -> {
-            w.getServer().execute(() -> {
-                w.playSoundAtBlockCenter(
-                        p,
-                        SoundEvents.ENTITY_ENDERMAN_TELEPORT,
-                        SoundCategory.BLOCKS,
-                        1,
-                        .9F,
-                        false);
-            });
-        }, DEFAULT_ANIMATION_DURATION, TimeUnit.SECONDS);
+        runWithDelay(() -> w.getServer().execute(() -> w.playSound(
+                null,
+                p,
+                SoundEvents.ENTITY_ENDERMAN_TELEPORT,
+                SoundCategory.BLOCKS,
+                .8F,
+                .9F)), DEFAULT_ANIMATION_DURATION, TimeUnit.SECONDS);
     }
 
     public static void playFailureAnimation(ServerWorld w, BlockPos p) {

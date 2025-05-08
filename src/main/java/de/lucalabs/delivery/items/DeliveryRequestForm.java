@@ -20,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 public class DeliveryRequestForm extends Item {
 
@@ -43,7 +44,7 @@ public class DeliveryRequestForm extends Item {
         if (!world.isClient) {
             boolean success = attemptDelivery((ServerWorld) world, user);
             if (success) {
-                user.playSound(SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME, 1, 1F);
+                user.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1F);
                 return TypedActionResult.success(user.getStackInHand(hand));
             }
         }
@@ -63,18 +64,20 @@ public class DeliveryRequestForm extends Item {
         }
 
         BlockPos deliveryPos = TransferUtils.chooseDeliveryPos(w, p.getBlockPos());
-        w.setBlockState(deliveryPos, Blocks.BARREL.getDefaultState());
+        AnimationUtils.playDeliveryAnimation(w, deliveryPos);
 
-        AnimationUtils.playDeliverySound(w, deliveryPos);
-        AnimationUtils.playTransferAnimation(w, deliveryPos);
+        AnimationUtils.runWithDelay(() -> w.getServer().execute(() -> {
+            w.setBlockState(deliveryPos, Blocks.BARREL.getDefaultState());
 
-        if (w.getBlockEntity(deliveryPos) instanceof BarrelBlockEntity barrel) {
-            for (int i = 0; i < barrel.size(); i++) {
-                barrel.setStack(i, items.get()[i]);
+            if (w.getBlockEntity(deliveryPos) instanceof BarrelBlockEntity barrel) {
+                for (int i = 0; i < barrel.size(); i++) {
+                    barrel.setStack(i, items.get()[i]);
+                }
             }
-        }
 
-        TransferUtils.removeLastDelivery();
+            TransferUtils.removeLastDelivery();
+        }), AnimationUtils.DEFAULT_ANIMATION_DURATION, TimeUnit.SECONDS);
+
         return true;
     }
 }
