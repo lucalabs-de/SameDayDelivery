@@ -45,7 +45,8 @@ public class DeliveryRequestForm extends Item {
             boolean success = attemptDelivery((ServerWorld) world, user);
             if (success) {
                 user.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1F);
-                return TypedActionResult.success(user.getStackInHand(hand));
+                user.getMainHandStack().decrement(1);
+                return TypedActionResult.consume(user.getStackInHand(hand));
             }
         }
 
