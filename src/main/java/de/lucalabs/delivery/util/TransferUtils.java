@@ -38,11 +38,11 @@ public final class TransferUtils {
 
         BlockPos choice = new BlockPos(x, reference.getY(), z);
 
-        while (w.getBlockState(choice).isAir()) {
+        while (w.getBlockState(choice).isReplaceable()) {
             choice = choice.down();
         }
 
-        while (!w.getBlockState(choice).isAir()) {
+        while (!w.getBlockState(choice).isReplaceable()) {
             choice = choice.up();
         }
 
@@ -66,6 +66,11 @@ public final class TransferUtils {
         return !getRawDeliveries().isEmpty();
     }
 
+    public static boolean isTransferPendingAt(World w, BlockPos pos) {
+        return SameDayDelivery.pendingTransfers.stream()
+                .anyMatch(p -> p.getLeft().equals(w.getRegistryKey()) && p.getRight().equals(pos));
+    }
+
     public static boolean storeStacksInFile(ItemStack[] items) {
         List<NbtElement> deliveries = getRawDeliveries();
         NbtList itemsNbt = new NbtList();
@@ -85,6 +90,28 @@ public final class TransferUtils {
         List<NbtElement> deliveries = getRawDeliveries();
         deliveries.remove(0);
         writeRawDeliveries(deliveries);
+    }
+
+    public static Queue<ItemStack[]> getDeliveries() {
+        Queue<ItemStack[]> result = new ArrayDeque<>();
+
+        for (NbtElement delivery : getRawDeliveries()) {
+            NbtList itemsNbt = (NbtList) delivery;
+
+            ItemStack[] items = new ItemStack[itemsNbt.size()];
+
+            for (int i = 0; i < items.length; i++) {
+                try {
+                    items[i] = ItemStack.fromNbt(itemsNbt.getCompound(i));
+                } catch (RuntimeException e) {
+                    // TODO add broken item
+                }
+            }
+
+            result.add(items);
+        }
+
+        return result;
     }
 
     private static ArrayList<NbtElement> getRawDeliveries() {
@@ -120,27 +147,5 @@ public final class TransferUtils {
         }
 
         return true;
-    }
-
-    public static Queue<ItemStack[]> getDeliveries() {
-        Queue<ItemStack[]> result = new ArrayDeque<>();
-
-        for (NbtElement delivery : getRawDeliveries()) {
-            NbtList itemsNbt = (NbtList) delivery;
-
-            ItemStack[] items = new ItemStack[itemsNbt.size()];
-
-            for (int i = 0; i < items.length; i++) {
-                try {
-                    items[i] = ItemStack.fromNbt(itemsNbt.getCompound(i));
-                } catch (RuntimeException e) {
-                    // TODO add broken item
-                }
-            }
-
-            result.add(items);
-        }
-
-        return result;
     }
 }

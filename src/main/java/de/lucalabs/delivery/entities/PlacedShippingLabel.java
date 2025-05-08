@@ -159,8 +159,10 @@ public class PlacedShippingLabel extends AbstractDecorationEntity {
     @Override
     public boolean damage(DamageSource source, float amount) {
         if (!getWorld().isClient()) {
-            if (source.getAttacker() instanceof PlayerEntity p) {
-                doTransfer(p);
+            if (source.getAttacker() instanceof PlayerEntity) {
+                if (!TransferUtils.isTransferPendingAt(source.getAttacker().getWorld(), attachedBarrel)) {
+                    doTransfer();
+                }
             }
         }
         return false;
@@ -199,7 +201,7 @@ public class PlacedShippingLabel extends AbstractDecorationEntity {
         return distance < d * d;
     }
 
-    private void doTransfer(PlayerEntity p) {
+    private void doTransfer() {
         ServerWorld world = (ServerWorld) getWorld();
         BlockEntity blockEntity = world.getBlockEntity(attachedBarrel);
 
