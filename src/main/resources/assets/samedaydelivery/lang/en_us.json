@@ -3,5 +3,8 @@
   "item.samedaydelivery.delivery_request": "Delivery Request Form",
 
   "lore.samedaydelivery.shipping_label": "A label to mark goods for distant shores.",
-  "lore.samedaydelivery.delivery_request": "Delivery guaranteed — weather permitting."
+  "lore.samedaydelivery.delivery_request": "Delivery guaranteed — weather permitting.",
+
+  "message.samedaydelivery.inprogress": "There's already a delivery en route!",
+  "message.samedaydelivery.nodelivery": "There is no delivery for you!"
 }

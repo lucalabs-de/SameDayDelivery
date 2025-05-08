@@ -2,6 +2,7 @@ package de.lucalabs.delivery.entities;
 
 import de.lucalabs.delivery.SameDayDelivery;
 import de.lucalabs.delivery.tags.Tags;
+import de.lucalabs.delivery.util.AnimationUtils;
 import de.lucalabs.delivery.util.TransferUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BarrelBlockEntity;
@@ -12,13 +13,13 @@ import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.decoration.AbstractDecorationEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
-import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -29,6 +30,8 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.Validate;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.concurrent.TimeUnit;
 
 public class PlacedShippingLabel extends AbstractDecorationEntity {
 
@@ -56,6 +59,16 @@ public class PlacedShippingLabel extends AbstractDecorationEntity {
         return label;
     }
 
+    @Nullable
+    public BlockPos getBarrel() {
+        return attachedBarrel;
+    }
+
+    public void setBarrel(BlockPos pos) {
+        this.attachedBarrel = pos;
+    }
+
+    @Override
     protected void updateAttachmentPosition() {
         if (this.facing != null) {
             double d = 0.46875;
@@ -85,10 +98,6 @@ public class PlacedShippingLabel extends AbstractDecorationEntity {
         return 0.0F;
     }
 
-    public void setBarrel(BlockPos pos) {
-        this.attachedBarrel = pos;
-    }
-
     @Override
     public int getWidthPixels() {
         return 10;
@@ -107,7 +116,6 @@ public class PlacedShippingLabel extends AbstractDecorationEntity {
     @Override
     public void onBreak(@Nullable Entity entity) {
         // stub
-        SameDayDelivery.LOGGER.error("broken");
     }
 
     @Override
@@ -117,7 +125,7 @@ public class PlacedShippingLabel extends AbstractDecorationEntity {
 
     @Override
     public boolean canStayAttached() {
-        return !this.getWorld().canSetBlock(this.attachmentPos) || isOnBarrel(this.getWorld().getBlockState(attachedBarrel));
+        return !this.getWorld().canSetBlock(this.attachmentPos) || isOnBarrel();
     }
 
     @Override
@@ -150,33 +158,9 @@ public class PlacedShippingLabel extends AbstractDecorationEntity {
 
     @Override
     public boolean damage(DamageSource source, float amount) {
-
-        if (getWorld().isClient()) {
-            return false;
-        }
-
-        ServerWorld world = (ServerWorld) getWorld();
-        BlockEntity blockEntity = world.getBlockEntity(attachedBarrel);
-
-        if (blockEntity instanceof BarrelBlockEntity barrel) {
-            int size = barrel.size(); // Total number of slots (should be 27)
-            ItemStack[] barrelStacks = new ItemStack[size];
-
-            for (int i = 0; i < size; i++) {
-                ItemStack stack = barrel.getStack(i); // Get the stack at this slot
-                if (!stack.isEmpty()) {
-                    barrelStacks[i] = stack;
-                }
-            }
-
-            boolean success = TransferUtils.storeStacksInFile(barrelStacks);
-
-            if (success) {
-                // TODO spawn enchanting particles and despawn barrel with items
-                world.spawnParticles(ParticleTypes.SMOKE, attachedBarrel.toCenterPos().getX(), attachedBarrel.toCenterPos().getY(), attachedBarrel.toCenterPos().getZ(), 20, 0.0, 0.0, 0.0, 0);
-            } else {
-                // TODO spawn smoke particles
-                world.spawnParticles(ParticleTypes.SMOKE, attachedBarrel.toCenterPos().getX(), attachedBarrel.toCenterPos().getY(), attachedBarrel.toCenterPos().getZ(), 20, 0.0, 0.0, 0.0, 0);
+        if (!getWorld().isClient()) {
+            if (source.getAttacker() instanceof PlayerEntity p) {
+                doTransfer(p);
             }
         }
         return false;
@@ -215,7 +199,40 @@ public class PlacedShippingLabel extends AbstractDecorationEntity {
         return distance < d * d;
     }
 
-    private boolean isOnBarrel(final BlockState state) {
-        return state.isSolid() && state.isIn(Tags.BARRELS);
+    private void doTransfer(PlayerEntity p) {
+        ServerWorld world = (ServerWorld) getWorld();
+        BlockEntity blockEntity = world.getBlockEntity(attachedBarrel);
+
+        var pending = SameDayDelivery.addPendingTransfer(world, attachedBarrel);
+
+        if (blockEntity instanceof BarrelBlockEntity barrel) {
+            int size = barrel.size();
+            ItemStack[] barrelStacks = new ItemStack[size];
+
+            for (int i = 0; i < size; i++) {
+                ItemStack stack = barrel.getStack(i);
+                barrelStacks[i] = stack;
+            }
+
+            boolean success = TransferUtils.storeStacksInFile(barrelStacks);
+
+            if (success) {
+                AnimationUtils.playTransferAnimation(world, attachedBarrel);
+
+                AnimationUtils.runWithDelay(() -> {
+                    world.removeBlock(attachedBarrel, false);
+                    this.kill();
+                    SameDayDelivery.pendingTransfers.remove(pending);
+                }, AnimationUtils.DEFAULT_ANIMATION_DURATION, TimeUnit.SECONDS);
+
+            } else {
+                AnimationUtils.playFailureAnimation(world, attachedBarrel);
+            }
+        }
+    }
+
+    private boolean isOnBarrel() {
+        BlockState s = getWorld().getBlockState(attachedBarrel);
+        return s.isSolid() && s.isIn(Tags.BARRELS);
     }
 }

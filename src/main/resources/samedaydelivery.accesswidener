@@ -1,2 +1,3 @@
 accessWidener	v2	named
-extendable method net/minecraft/entity/Entity getBoundingBox ()Lnet/minecraft/util/math/Box;
+extendable  method  net/minecraft/entity/Entity getBoundingBox  ()Lnet/minecraft/util/math/Box;
+accessible  method  net/minecraft/nbt/NbtList   <init>          (Ljava/util/List;B)V
