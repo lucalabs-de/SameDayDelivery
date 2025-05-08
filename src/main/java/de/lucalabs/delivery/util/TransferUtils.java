@@ -68,16 +68,13 @@ public final class TransferUtils {
 
     public static boolean storeStacksInFile(ItemStack[] items) {
         List<NbtElement> deliveries = getRawDeliveries();
-        NbtList l = new NbtList();
+        NbtList itemsNbt = new NbtList();
 
         for (ItemStack i : items) {
             if (i != null) {
-                l.add(i.writeNbt(new NbtCompound()));
+                itemsNbt.add(i.writeNbt(new NbtCompound()));
             }
         }
-
-        NbtCompound itemsNbt = new NbtCompound();
-        itemsNbt.put("items", l);
 
         deliveries.add(itemsNbt);
 
@@ -90,13 +87,13 @@ public final class TransferUtils {
         writeRawDeliveries(deliveries);
     }
 
-    private static List<NbtElement> getRawDeliveries() {
+    private static ArrayList<NbtElement> getRawDeliveries() {
         try {
             File f = FileUtils.getItemFile();
             NbtCompound nbt = NbtIo.read(f);
 
             if (nbt == null) {
-                return Collections.emptyList();
+                return new ArrayList<>();
             }
 
             NbtList deliveriesNbt = nbt.getList("deliveries", NbtElement.LIST_TYPE);
@@ -106,7 +103,7 @@ public final class TransferUtils {
             SameDayDelivery.LOGGER.error(e.getMessage());
         }
 
-        return Collections.emptyList();
+        return new ArrayList<>();
     }
 
     private static boolean writeRawDeliveries(List<NbtElement> deliveries) {

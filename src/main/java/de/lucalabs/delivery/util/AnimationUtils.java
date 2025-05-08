@@ -29,7 +29,7 @@ public final class AnimationUtils {
                 SoundCategory.BLOCKS,
                 1,
                 .5F,
-                true
+                false
         );
     }
 
@@ -51,7 +51,7 @@ public final class AnimationUtils {
                         SoundCategory.BLOCKS,
                         1,
                         .9F,
-                        true);
+                        false);
             });
         }, DEFAULT_ANIMATION_DURATION, TimeUnit.SECONDS);
     }
